@@ -1,0 +1,10 @@
+#version 130
+
+out vec4 outColor;
+
+void main()
+{
+    
+    float tens;
+    outColor=vec4(vec3(1.,1.,1.), 1.);
+}

@@ -1,0 +1,97 @@
+#include <iostream>
+#include "include/shader.h"
+#include "include/vao.h"
+#include <glm/glm.hpp>
+#include <X11/X.h>
+#include <X11/Xlib.h>
+#include <GL/glx.h>
+#include <GL/glu.h>
+#include <GL/glew.h>
+#include <unistd.h>
+#include <glm/gtx/transform.hpp>
+
+
+GLint			 att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
+XVisualInfo*             vi;
+Colormap                cmap;
+XSetWindowAttributes    swa;
+Window                  win;
+GLXContext              glc;
+XWindowAttributes       gwa;
+XEvent                  xev;
+Display                *dpy;
+Window                 root;
+
+int main(int argc, char *argv[]) { 
+	dpy = XOpenDisplay(NULL);
+
+	if(dpy == NULL) {
+		printf("\n\tcannot connect to X server\n\n");
+		exit(0);
+	}
+	root = DefaultRootWindow(dpy);
+
+	vi = glXChooseVisual(dpy, 0.,att);
+
+	if(vi == NULL) {
+		printf("\n\tno appropriate visual found\n\n");
+		exit(0);
+	} else {
+		printf("\n\tvisual %p selected\n", (void *)vi->visualid); /* %p creates hexadecimal output like in glxinfo */
+	}
+
+
+	cmap = XCreateColormap(dpy, root, vi->visual, AllocNone);
+
+	swa.colormap = cmap;
+	swa.event_mask = ExposureMask | KeyPressMask;
+
+	win = XCreateWindow(dpy, root, 0, 0, 1, 1, 0, vi->depth, InputOutput, vi->visual, CWColormap | CWEventMask, &swa);
+
+	XMapWindow(dpy, win);
+	XStoreName(dpy, win, "Bullet Debug Draw");
+
+	glc = glXCreateContext(dpy, vi, NULL, GL_TRUE);
+	glXMakeCurrent(dpy, win, glc);
+    std::cout<<glGetString(GL_VERSION)<<std::endl;
+    glewExperimental=GL_TRUE;
+    if(glewInit()!=GLEW_OK)
+        std::cout<<"glew failed."<<std::endl;
+	glEnable(GL_DEPTH_TEST);
+
+	XNextEvent(dpy, &xev);
+
+    Program prog=createProgram("shader/grisVert","shader/grisFrag");
+    float vertices[9]={0.,0.5,-0.9f,0.5,-0.5,-0.9f,-0.5,-0.5,-0.9f};
+    vao data=createVAO(&vertices[0], 9);
+    float c;
+	XGetWindowAttributes(dpy, win, &gwa);
+	glViewport(0, 0, gwa.width, gwa.height);
+    glm::mat4 projection=glm::perspective(40.f, float(gwa.width)/float(gwa.height),0.1f, 100.f);
+    glm::mat4 view=glm::lookAt(glm::vec3(0.f,0.f,2.f),glm::vec3(0.f,0.f,0.f),glm::vec3(0.f,1.f,0.f));
+    glm::mat4 model;
+	while(1) {
+
+		if(xev.type == Expose) {
+			XGetWindowAttributes(dpy, win, &gwa);
+			glViewport(0, 0, gwa.width, gwa.height);
+            float r=gwa.width/gwa.height;
+            projection=glm::perspective(40.f, float(gwa.width)/float(gwa.height),0.1f, 100.f);
+		}
+		else if(xev.type == KeyPress) {
+			glXMakeCurrent(dpy, None, NULL);
+			glXDestroyContext(dpy, glc);
+			XDestroyWindow(dpy, win);
+			XCloseDisplay(dpy);
+			exit(0);
+		}
+	    glClearColor(.0, 1.0, 1.0, 1.0);
+        c+=0.01;
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        model=glm::rotate(c, glm::vec3(0.,1.,0.));
+        printBillboard(data, prog.pID, 3, projection, model,view);
+		glXSwapBuffers(dpy, win);
+	}
+    freeVAO(data); 
+    freeProgram(prog);
+}
