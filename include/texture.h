@@ -19,13 +19,13 @@
 #ifndef  TEXTURE_INC
 #define  TEXTURE_INC
 #include <GL/glew.h>
-#include <string>
+#include <iostream>
 #include <GL/glx.h>
 #include <GL/glu.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <string>
-#include <SDL/SDL_image.h>
+#include <IL/ilu.h>
 struct tex
 {
     GLuint ID;

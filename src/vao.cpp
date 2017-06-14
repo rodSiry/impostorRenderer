@@ -23,16 +23,6 @@
 #endif   /* ----- #ifndef BUFFER_OFFSET----- */
 
 using namespace glm;
-void printMat(mat4 m)
-{
-    for(int i(0);i<4;i++)
-    {
-        for(int j(0);j<4;j++)
-            std::cout<<m[i][j]<<" ";
-        std::cout<<std::endl;
-    }
-    std::cout<<std::endl;
-}
 vao createVAO(float* vertices, int size)
 {
     vao res;
@@ -68,7 +58,7 @@ void printVAO(vao data, GLuint sh, int size, glm::mat4 projection,glm::mat4 mode
 void printBillboard(vao data, GLuint sh, int size, glm::mat4 projection,glm::mat4 model,glm::mat4 view)
 {
     mat4 modelView=view*model;
-    //modelView=mat4(1.f)+modelView-mat4(mat3(modelView));
+    modelView=mat4(1.f)+modelView-mat4(mat3(modelView));
     //modelView[3][3]=1.f;
     printVAO(data, sh, size, projection, mat4(1.f), modelView);
 }

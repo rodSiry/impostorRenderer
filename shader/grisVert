@@ -4,11 +4,18 @@ in vec3 in_Vertex;
 uniform mat4 projection; 
 uniform mat4 model; 
 uniform mat4 view; 
-
-
+out vec2 uv;
+uniform int uvP[2];
+uniform int uvN[2];
+uniform float r;
 void main()
 {
-    gl_Position=projection*view*model*vec4(in_Vertex,1.);
+    uv=0.5*vec2(in_Vertex.x,in_Vertex.y)+vec2(0.5,0.5);
+    uv.x=(uv.x+uvP[0])/float(uvN[0]);
+    uv.y=(uv.y+uvP[1])/float(uvN[1]);
+    vec3 vertex_trans=in_Vertex;
+    vertex_trans.x*=r;
+    gl_Position=projection*view*model*vec4(vertex_trans,1.);
 }
 
 
