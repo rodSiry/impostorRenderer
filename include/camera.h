@@ -28,6 +28,7 @@
 #include "texture.h"
 #include "vao.h"
 #include <math.h>
+#include <SDL2/SDL.h>
 
 struct camera
 {
@@ -35,6 +36,6 @@ struct camera
     float x;
     float y; 
 };
-void cameraUpdate(camera* cam);
+void cameraUpdate(camera* cam, const Uint8* keys);
 glm::mat4 cameraView(camera* cam);
 #endif   /* ----- #ifndef CAMERA_INC  ----- */
